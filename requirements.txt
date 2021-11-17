@@ -5,3 +5,4 @@ flax>=0.3.5
 optax>=0.0.8
 tensorflow-cpu
 transformers
+nltk
