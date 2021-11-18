@@ -18,4 +18,5 @@ if __name__ == "__main__":
                         "target": tgt_line.strip()
                     }
                 ))
+                fout.write("\n")
         
