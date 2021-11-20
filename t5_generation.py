@@ -13,9 +13,9 @@ if __name__ == "__main__":
     parser.add_argument('--dump-path', type=str, help="path to dump the output")
     args = parser.parse_args()
 
-    model = FlaxT5ForConditionalGeneration.pre_pretrained(args.model_path)
+    model = FlaxT5ForConditionalGeneration.from_pretrained(args.model_path)
     tokenizer = T5TokenizerFast.from_pretrained(args.model_path)
-    with open(os.path.join(args.dump_path, "test.src")) as dump_s, open(os.path.join(args.dump_path, "test.tgt")) as dump_t:
+    with open(os.path.join(args.dump_path, "test.src"), "w") as dump_s, open(os.path.join(args.dump_path, "test.tgt"), "w") as dump_t:
         for line in tqdm(open(args.eval_path).readlines()):
             line_json = json.loads(line.strip())
             source = line_json["source"]
