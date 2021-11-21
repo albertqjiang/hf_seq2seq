@@ -6,6 +6,13 @@ import json
 import os
 
 
+def translate(model, tokenizer, source):
+    input = tokenizer(["summarize " + source], return_tensors='np').input_ids
+    summary_ids = model.generate(input).sequences
+    output = tokenizer.decode(summary_ids[0], skip_special_tokens=True, clean_up_tokenization_spaces=False)
+    return output
+
+
 if __name__ == "__main__":
     parser = argparse.ArgumentParser("Generation for T5 models")
     parser.add_argument('--model-path', type=str, help="path to the model as well as the tokenizer")
@@ -19,11 +26,9 @@ if __name__ == "__main__":
         for line in tqdm(open(args.eval_path).readlines()):
             line_json = json.loads(line.strip())
             source = line_json["source"]
-            input = tokenizer(["summarize " + source], return_tensors='np').input_ids
-            summary_ids = model.generate(input).sequences
-            output = tokenizer.decode(summary_ids[0], skip_special_tokens=True, clean_up_tokenization_spaces=False)
+            target = translate(model, tokenizer, source)
         
             dump_s.write(source)
             dump_s.write("\n")
-            dump_t.write(output)
+            dump_t.write(target)
             dump_t.write("\n")
