@@ -8,7 +8,7 @@ import os
 
 def translate(model, tokenizer, source):
     input = tokenizer(["summarize " + source], return_tensors='np').input_ids
-    summary_ids = model.generate(input).sequences
+    summary_ids = model.generate(input, max_length=256).sequences
     output = tokenizer.decode(summary_ids[0], skip_special_tokens=True, clean_up_tokenization_spaces=False)
     return output
 
