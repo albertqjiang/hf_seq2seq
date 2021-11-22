@@ -8,7 +8,7 @@ if __name__ == "__main__":
     parser.add_argument("--output-path", type=str, help="Where to dump the resulting files")
     args = parser.parse_args()
 
-    file_name = args.file_path.split(".")[-1]
+    file_name = args.file_path.split("/")[-1]
     lines = open(args.file_path).readlines()
     number_of_lines = len(lines)
     one_eighth = int(number_of_lines/8)
