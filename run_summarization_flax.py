@@ -22,6 +22,7 @@ import logging
 import os
 import sys
 import time
+import wandb
 from dataclasses import dataclass, field
 from functools import partial
 from pathlib import Path
@@ -203,6 +204,18 @@ class DataTrainingArguments:
     )
     overwrite_cache: bool = field(
         default=False, metadata={"help": "Overwrite the cached training and evaluation sets"}
+    )
+    wandb_project_name: Optional[str] = field(
+        default="Unspecified-project",
+        metadata={
+            "help": "Name of the wandb project for recording."
+        },
+    )
+    wandb_run_name: Optional[str] = field(
+        default="Unspecified-run",
+        metadata={
+            "help": "Name of the wandb run for recording."
+        },
     )
 
     def __post_init__(self):
@@ -558,6 +571,9 @@ def main():
             from flax.metrics.tensorboard import SummaryWriter
 
             summary_writer = SummaryWriter(log_dir=Path(training_args.output_dir))
+
+            wandb.tensorboard.patch(root_logdir=training_args.output_dir)
+            wandb.init(project=data_args.wandb_project_name, name=data_args.wandb_run_name)
         except ImportError as ie:
             has_tensorboard = False
             logger.warning(
