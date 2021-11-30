@@ -205,17 +205,8 @@ class DataTrainingArguments:
     overwrite_cache: bool = field(
         default=False, metadata={"help": "Overwrite the cached training and evaluation sets"}
     )
-    wandb_project_name: Optional[str] = field(
-        default="Unspecified-project",
-        metadata={
-            "help": "Name of the wandb project for recording."
-        },
-    )
-    wandb_run_name: Optional[str] = field(
-        default="Unspecified-run",
-        metadata={
-            "help": "Name of the wandb run for recording."
-        },
+    run_name: Optional[str] = field(
+        default=None, metadata={"help": "An optional descriptor for the run. Notably used for wandb logging. Should be in the format of project_name/run_name."}
     )
 
     def __post_init__(self):
@@ -563,6 +554,12 @@ def main():
         result["gen_len"] = np.mean(prediction_lens)
         result = {k: round(v, 4) for k, v in result.items()}
         return result
+    
+    def compute_accuracies(pred, labels):
+        token_acc = (pred == labels).sum() / (pred.size)
+        seq_acc = np.all(pred == labels, axis=0).sum() / pred.shape[0]
+        return token_acc, seq_acc
+
 
     # Enable tensorboard only on the master node
     has_tensorboard = is_tensorboard_available()
@@ -572,8 +569,8 @@ def main():
 
             summary_writer = SummaryWriter(log_dir=Path(training_args.output_dir))
 
-            wandb.tensorboard.patch(root_logdir=training_args.output_dir)
-            wandb.init(project=data_args.wandb_project_name, name=data_args.wandb_run_name)
+            project_name, run_name = data_args.run_name.split("/")
+            wandb.init(project=project_name, name=run_name)
         except ImportError as ie:
             has_tensorboard = False
             logger.warning(
@@ -793,6 +790,18 @@ def main():
             if training_args.push_to_hub:
                 repo.push_to_hub(commit_message=f"Saving weights and logs of epoch {epoch}", blocking=False)
 
+        token_acc, seq_acc = compute_accuracies(eval_preds, eval_labels)
+        wandb_epoch_log_info = {
+            "epoch": int(epoch)+1,
+            "training loss": float(train_metrics['loss']),
+            "eval loss": float(eval_metrics['loss']),
+            "eval token accuracy": float(token_acc),
+            "eval sequence accuracy": float(seq_acc)
+        }
+        for key, value in rouge_metrics.items():
+            wandb_epoch_log_info[f"eval {key}"] = float(value)
+        wandb.log(wandb_epoch_log_info)
+
     # ======================== Prediction loop ==============================
     if training_args.do_predict:
         logger.info("*** Predict ***")
@@ -831,6 +840,13 @@ def main():
         # Print metrics
         desc = f"Predict Loss: {pred_metrics['loss']} | {rouge_desc})"
         logger.info(desc)
+
+        token_acc, seq_acc = compute_accuracies(pred_generations, pred_labels)
+        wandb.run.summary['prediction loss'] = float(pred_metrics['loss'])
+        wandb.run.summary['prediction token accuracy'] = float(token_acc)
+        wandb.run.summary['prediction sequence accuracy'] = float(seq_acc)
+        for key, value in rouge_metrics.items():
+            wandb.run.summary[f'prediction {key}'] = float(value)
 
 
 if __name__ == "__main__":
