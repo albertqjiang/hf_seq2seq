@@ -556,9 +556,17 @@ def main():
         return result
     
     def compute_accuracies(pred, labels):
-        token_acc = (pred == labels).sum() / (pred.size)
-        seq_acc = np.all(pred == labels, axis=0).sum() / pred.shape[0]
-        return token_acc, seq_acc
+        total_tokens = 0
+        correct_tokens = 0
+        total_sequences = 0
+        correct_sequences = 0
+        for pred_element, label_element in zip(pred, labels):
+            total_tokens += pred_element.size
+            correct_tokens += (pred_element == label_element).sum()
+            total_sequences += pred_element.shape[0]
+            correct_sequences += jnp.all(pred_element == label_element, axis=0).sum()
+
+        return correct_tokens / total_tokens, correct_sequences / total_sequences
 
 
     # Enable tensorboard only on the master node
