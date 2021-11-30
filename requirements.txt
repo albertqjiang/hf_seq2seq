@@ -1,8 +1,8 @@
 six==1.15.0
 typing-extensions==3.7.4.3
 datasets == 1.1.3
-jax[tpu]==0.2.16
-jaxlib==0.1.69
+jax[tpu]==0.2.25
+jaxlib==0.1.74
 flax==0.3.5
 optax==0.0.8
 tensorflow-cpu
@@ -10,4 +10,4 @@ transformers
 nltk
 rouge_score
 grpcio==1.37.0
-keras-nightly==2.6.0.dev
+keras-nightly~=2.6.0.dev
