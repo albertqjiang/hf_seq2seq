@@ -801,7 +801,7 @@ def main():
         token_acc, seq_acc = compute_accuracies(eval_preds, eval_labels)
         wandb_epoch_log_info = {
             "epoch": int(epoch)+1,
-            "training loss": float(train_metrics['loss']),
+            "training loss": float(train_metric['loss']),
             "eval loss": float(eval_metrics['loss']),
             "eval token accuracy": float(token_acc),
             "eval sequence accuracy": float(seq_acc)
