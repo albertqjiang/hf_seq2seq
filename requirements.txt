@@ -1,11 +1,12 @@
 six==1.15.0
 typing-extensions==3.7.4.3
 datasets == 1.16.1
-jax[tpu]>=0.2.16 -f https://storage.googleapis.com/jax-releases/libtpu_releases.html
 flax==0.3.5
 optax==0.0.8
 tensorflow-cpu
 nltk
 rouge_score
 grpcio==1.37.0
-keras-nightly~=2.6.0.dev
+keras
+
+# jax[tpu]>=0.2.16 -f https://storage.googleapis.com/jax-releases/libtpu_releases.html

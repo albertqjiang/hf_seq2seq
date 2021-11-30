@@ -569,7 +569,7 @@ def main():
 
             summary_writer = SummaryWriter(log_dir=Path(training_args.output_dir))
 
-            project_name, run_name = data_args.wandb_run_name.split("/")
+            project_name, run_name = data_args.wandb_run_name.split("/")[0], data_args.wandb_run_name.split("/")[-1]
             wandb.init(project=project_name, name=run_name)
         except ImportError as ie:
             has_tensorboard = False
