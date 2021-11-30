@@ -205,8 +205,8 @@ class DataTrainingArguments:
     overwrite_cache: bool = field(
         default=False, metadata={"help": "Overwrite the cached training and evaluation sets"}
     )
-    run_name: Optional[str] = field(
-        default=None, metadata={"help": "An optional descriptor for the run. Notably used for wandb logging. Should be in the format of project_name/run_name."}
+    wandb_run_name: Optional[str] = field(
+        default=None, metadata={"help": "An optional descriptor for the run. Notably used for wandb logging. Should be in the format of project_name/wandb_."}
     )
 
     def __post_init__(self):
@@ -569,7 +569,7 @@ def main():
 
             summary_writer = SummaryWriter(log_dir=Path(training_args.output_dir))
 
-            project_name, run_name = data_args.run_name.split("/")
+            project_name, run_name = data_args.wandb_run_name.split("/")
             wandb.init(project=project_name, name=run_name)
         except ImportError as ie:
             has_tensorboard = False
