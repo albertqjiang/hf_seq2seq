@@ -2,7 +2,7 @@ six==1.15.0
 typing-extensions==3.7.4.3
 datasets == 1.1.3
 jax[tpu]==0.2.25
-jaxlib==0.1.74
+jaxlib==0.1.73
 flax==0.3.5
 optax==0.0.8
 tensorflow-cpu
