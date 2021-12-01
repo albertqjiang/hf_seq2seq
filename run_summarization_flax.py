@@ -730,6 +730,27 @@ def main():
     train_time = 0
     epochs = tqdm(range(num_epochs), desc=f"Epoch ... (1/{num_epochs})", position=0)
     for epoch in epochs:
+        eval_metrics = []
+        eval_preds = []
+        eval_labels = []
+
+        eval_loader = data_loader(input_rng, eval_dataset, eval_batch_size)
+        eval_steps = len(eval_dataset) // eval_batch_size
+        for _ in tqdm(range(eval_steps), desc="Evaluating...", position=2, leave=False):
+            # Model forward
+            batch = next(eval_loader)
+            labels = batch["labels"]
+
+            metrics = p_eval_step(state.params, batch)
+            eval_metrics.append(metrics)
+
+            # generation
+            if data_args.predict_with_generate:
+                generated_ids = p_generate_step(state.params, batch)
+                eval_preds.extend(jax.device_get(generated_ids.reshape(-1, gen_kwargs["max_length"])))
+                eval_labels.extend(jax.device_get(labels.reshape(-1, labels.shape[-1])))
+        import pdb; pdb.set_trace()
+        
         # ======================== Training ================================
         train_start = time.time()
 
