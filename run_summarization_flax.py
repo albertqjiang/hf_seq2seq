@@ -562,7 +562,7 @@ def main():
         correct_sequences = 0
 
         for pred_element, label_element in zip(pred, labels):
-            total_tokens += (pred_element != tokenizer.pad_token_id).size
+            total_tokens += (pred_element != tokenizer.pad_token_id).sum()
             correct_tokens += ((pred_element == label_element) & (pred_element != tokenizer.pad_token_id)).sum()
 
         decoded_preds = tokenizer.batch_decode(pred, skip_special_tokens=True)
