@@ -560,12 +560,18 @@ def main():
         correct_tokens = 0
         total_sequences = 0
         correct_sequences = 0
-        for pred_element, label_element in zip(pred, labels):
-            total_tokens += pred_element.size
-            correct_tokens += (pred_element == label_element).sum()
-            total_sequences += pred_element.shape[0]
-            correct_sequences += jnp.all(pred_element == label_element, axis=0).sum()
 
+        for pred_element, label_element in zip(pred, labels):
+            total_tokens += (pred_element != tokenizer.pad_token_id).size
+            correct_tokens += ((pred_element == label_element) & (pred_element != tokenizer.pad_token_id)).sum()
+
+        decoded_preds = tokenizer.batch_decode(pred, skip_special_tokens=True)
+        decoded_labels = tokenizer.batch_decode(labels, skip_special_tokens=True)
+        decoded_preds, decoded_labels = postprocess_text(decoded_preds, decoded_labels)
+        for decoded_pred, decoded_label in zip(decoded_preds, decoded_labels):
+            if decoded_pred == decoded_label:
+                correct_sequences += 1
+            total_sequences += 1
         return correct_tokens / total_tokens, correct_sequences / total_sequences
 
 

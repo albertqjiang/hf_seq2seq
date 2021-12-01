@@ -22,7 +22,7 @@ USE_TORCH=false python3 run_summarization_flax.py \
     --text_column source --summary_column target \
     --num_train_epochs 100 \
     --do_train --do_eval --do_predict --predict_with_generate \
-    --learning_rate 5e-5 --warmup_steps 500 \
+    --learning_rate 5e-4 --warmup_steps 500 \
     --per_device_train_batch_size 64 \
 	--per_device_eval_batch_size 64 \
     --max_source_length 512 --max_target_length 256 \
@@ -40,7 +40,7 @@ USE_TORCH=false python3 run_summarization_flax.py \
     --text_column source --summary_column target \
     --num_train_epochs 20 \
     --do_train --do_eval --do_predict --predict_with_generate \
-    --learning_rate 5e-5 --warmup_steps 500 \
+    --learning_rate 5e-4 --warmup_steps 500 \
     --per_device_train_batch_size 64 \
 	--per_device_eval_batch_size 64 \
     --max_source_length 512 --max_target_length 256 \
@@ -58,7 +58,7 @@ USE_TORCH=false python3 run_summarization_flax.py \
     --text_column source --summary_column target \
     --num_train_epochs 20 \
     --do_train --do_eval --do_predict --predict_with_generate \
-    --learning_rate 5e-5 --warmup_steps 500 \
+    --learning_rate 5e-4 --warmup_steps 500 \
     --per_device_train_batch_size 64 \
 	--per_device_eval_batch_size 64 \
     --max_source_length 512 --max_target_length 256 \
