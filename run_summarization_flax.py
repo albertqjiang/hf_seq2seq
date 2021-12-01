@@ -564,7 +564,7 @@ def main():
         for pred_element, label_element in zip(pred, labels):
             pred_element = pred_element[pred_element != tokenizer.pad_token_id]
             total_tokens += pred_element.size
-            correct_tokens += (pred_element == label_element).sum()
+            correct_tokens += (pred_element == label_element[:pred_element.size]).sum()
 
         decoded_preds = tokenizer.batch_decode(pred, skip_special_tokens=True)
         decoded_labels = tokenizer.batch_decode(labels, skip_special_tokens=True)

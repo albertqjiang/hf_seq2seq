@@ -41,8 +41,8 @@ USE_TORCH=false python3 run_summarization_flax.py \
     --num_train_epochs 20 \
     --do_train --do_eval --do_predict --predict_with_generate \
     --learning_rate 5e-4 --warmup_steps 500 \
-    --per_device_train_batch_size 64 \
-	--per_device_eval_batch_size 64 \
+    --per_device_train_batch_size 32 \
+	--per_device_eval_batch_size 32 \
     --max_source_length 512 --max_target_length 256 \
     --overwrite_output_dir \
     --wandb_run_name benchmarking-models/t5-base
@@ -59,8 +59,8 @@ USE_TORCH=false python3 run_summarization_flax.py \
     --num_train_epochs 20 \
     --do_train --do_eval --do_predict --predict_with_generate \
     --learning_rate 5e-4 --warmup_steps 500 \
-    --per_device_train_batch_size 64 \
-	--per_device_eval_batch_size 64 \
+    --per_device_train_batch_size 1 \
+	--per_device_eval_batch_size 1 \
     --max_source_length 512 --max_target_length 256 \
     --overwrite_output_dir \
     --wandb_run_name benchmarking-models/google/t5-v1_1-large
