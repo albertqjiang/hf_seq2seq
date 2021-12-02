@@ -22,10 +22,10 @@ if __name__ == "__main__":
 
     batch_size = 1000
     def batch_iterator():
-        for i in range(0, len(dataset), batch_size):
+        for i in range(0, len(dataset["train"]), batch_size):
             batch = dataset[i : i + batch_size]
             yield [source + target for source, target in zip(batch["source"], batch["target"])]
 
-    tokenizer = AutoTokenizer.from_pretrained("t5")
+    tokenizer = AutoTokenizer.from_pretrained("t5-base")
     new_tokenizer = tokenizer.train_new_from_iterator(batch_iterator(), vocab_size=data_args.vocab_size)
     new_tokenizer.save_pretrained(os.path.join(data_args.dump_path, f"customised_tokenizer_t5_vocab_size{data_args.vocab_size}"))
