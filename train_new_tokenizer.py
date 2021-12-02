@@ -23,7 +23,7 @@ if __name__ == "__main__":
     batch_size = 1000
     def batch_iterator():
         for i in range(0, len(dataset["train"]), batch_size):
-            batch = dataset[i : i + batch_size]
+            batch = dataset["train"][i : i + batch_size]
             yield [source + target for source, target in zip(batch["source"], batch["target"])]
 
     tokenizer = AutoTokenizer.from_pretrained("t5-base")
