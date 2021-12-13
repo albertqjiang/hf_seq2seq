@@ -3,11 +3,9 @@ import json
 import threading
 import time
 from queue import Queue, Empty
-from copy import deepcopy
 
 import jax
 import numpy as np
-import optax
 
 from transformers import FlaxT5ForConditionalGeneration, T5TokenizerFast
 
@@ -116,7 +114,9 @@ if __name__ == "__main__":
             outputs = model.generate(input_ids, max_length=max_length, num_beams=single_generation_batch)
             output_ids = outputs.sequences
             output_scores = outputs.scores.tolist()
-            output_strings = tokenizer.batch_decode(output_ids, skip_special_tokens=True, clean_up_tokenization_spaces=False)
+            output_strings = [tokenizer.batch_decode(output_ids[i], skip_special_tokens=True, clean_up_tokenization_spaces=False)
+                for i in range(single_generation_batch)
+            ]
             
             for o_string, o_score in zip(output_strings, output_scores):
                 sequences.append(o_string)
