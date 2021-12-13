@@ -119,7 +119,7 @@ if __name__ == "__main__":
             output_strings = tokenizer.batch_decode(output_ids, skip_special_tokens=True, clean_up_tokenization_spaces=False)
             
             for o_string, o_score in zip(output_strings, output_scores):
-                sequences.append(tokenizer.convert_ids_to_tokens(o_string))
+                sequences.append(o_string)
                 log_probs_for_sequences.append(o_score)
 
         for o, q, slp in zip(sequences, all_q, log_probs_for_sequences):
