@@ -54,7 +54,7 @@ USE_TORCH=false python3 run_summarization_flax.py \
 USE_TORCH=false python3 run_summarization_flax.py \
     --output_dir models \
     --tpu_num_cores 8 \
-	--model_type t5 --tokenizer_name /home/qj213/t5-small --config_name /home/qj213/t5-base \
+	--model_type t5 --tokenizer_name /home/qj213/customised_tokenizer_t5_vocab_size1000 --config_name /home/qj213/t5-base \
     --source_prefix "summarize: " \
 	--train_file /home/qj213/seq2seq_all/with_state/train.json \
     --validation_file /home/qj213/seq2seq_all/with_state/val.json \
@@ -67,10 +67,10 @@ USE_TORCH=false python3 run_summarization_flax.py \
 	--per_device_eval_batch_size 32 \
     --max_source_length 512 --max_target_length 256 \
     --overwrite_output_dir \
-    --wandb_run_name benchmarking-models/t5-base
+    --wandb_run_name benchmarking-models/t5-base-customised-token
 
 # T5-v1.1-large on PISA
-USE_TORCH=false run_summarization_flax.py \
+USE_TORCH=false python3 run_summarization_flax.py \
     --output_dir models \
     --tpu_num_cores 8 \
     --model_name_or_path google/t5-v1_1-large \
@@ -86,6 +86,42 @@ USE_TORCH=false run_summarization_flax.py \
     --max_source_length 128 --max_target_length 128 \
     --overwrite_output_dir \
     --wandb_run_name benchmarking-models/google/t5-v1_1-large
+
+# T5-v1.1-large on PISA with last 1 step
+USE_TORCH=false python3 run_summarization_flax.py \
+    --output_dir models \
+    --tpu_num_cores 8 \
+    --model_name_or_path google/t5-v1_1-large \
+    --source_prefix "summarize: " \
+    --train_file /home/qj213/seq2seq_all/with_proof_and_state/last_1_step_train.json \
+    --validation_file /home/qj213/seq2seq_all/with_proof_and_state/last_1_step_val.json \
+    --test_file /home/qj213/seq2seq_all/with_proof_and_state/last_1_step_test.json \
+    --text_column source --summary_column target \
+    --num_train_epochs 20 \
+    --do_train --do_eval --do_predict --predict_with_generate \
+    --learning_rate 5e-4 --warmup_steps 500 \
+    --per_device_train_batch_size 8 --per_device_eval_batch_size 8 \
+    --max_source_length 128 --max_target_length 64 \
+    --overwrite_output_dir \
+    --wandb_run_name benchmarking-models/google/t5-v1_1-large-last-1-step
+
+# GPT-2 on PISA
+USE_TORCH=false python3 run_clm_flax.py \
+    --output_dir models \
+    --tpu_num_cores 8 \
+	--model_name_or_path gpt2 \
+	--train_file /home/qj213/seq2seq_all/with_state/train.json \
+    --validation_file /home/qj213/seq2seq_all/with_state/val.json \
+    --test_file /home/qj213/seq2seq_all/with_state/test.json \
+    --text_column source --summary_column target \
+    --num_train_epochs 20 \
+    --do_train --do_eval --do_predict --predict_with_generate \
+    --learning_rate 5e-4 --warmup_steps 500 \
+    --per_device_train_batch_size 64 \
+	--per_device_eval_batch_size 64 \
+    --max_source_length 512 --max_target_length 256 \
+    --overwrite_output_dir \
+    --wandb_run_name benchmarking-models/gpt2
 
 USE_TORCH=false python3 run_summarization_flax.py \
     --output_dir models \
