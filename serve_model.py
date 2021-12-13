@@ -107,7 +107,7 @@ if __name__ == "__main__":
         sequences = []
         log_probs_for_sequences = []
         single_generation_batch = 8 if n > 8 else n
-        input_ids = tokenizer(["summarize: " + context] * single_generation_batch, return_tensors='np').input_ids
+        input_ids = tokenizer("summarize: " + context, return_tensors='np').input_ids
         for i in range(n // single_generation_batch):
             all_tokenized = []
 
