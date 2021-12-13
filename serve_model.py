@@ -19,7 +19,7 @@ requests_queue = Queue()
 """
 curl --header "Content-Type: application/json" \
   --request POST \
-  --data '{"context":"eleutherai", "top_p": 1.0, "temp": 0.8, "gen_tokens": 64, "n": 8}' \
+  --data '{"context":"eleutherai", "n": 8}' \
   http://localhost:5000/complete
 """
 
@@ -51,9 +51,6 @@ def complete():
 
         requests_queue.put(({
                                 "context": content["context"],
-                                "top_p": float(content["top_p"]),
-                                "temp": float(content["temp"]),
-                                "gen_tokens": int(content["gen_tokens"]),
                                 "n": int(content["n"])
                             }, response_queue))
 
@@ -118,9 +115,8 @@ if __name__ == "__main__":
 
             outputs = model.generate(input_ids, max_length=max_length, num_beams=single_generation_batch)
             output_ids = outputs.sequences
-            output_scores = outputs.scores
+            output_scores = outputs.scores.tolist()
             output_strings = tokenizer.batch_decode(output_ids, skip_special_tokens=True, clean_up_tokenization_spaces=False)
-            output_scores = output_scores.tolist()
             
             for o_string, o_score in zip(output_strings, output_scores):
                 sequences.append(tokenizer.convert_ids_to_tokens(o_string))
