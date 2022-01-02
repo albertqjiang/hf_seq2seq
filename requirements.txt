@@ -1,5 +1,5 @@
 six==1.15.0
-typing-extensions==3.7.4.3
+typing-extensions==3.10.0.2
 datasets == 1.16.1
 flax==0.3.5
 optax==0.1.0
@@ -8,5 +8,6 @@ nltk
 rouge_score
 grpcio==1.37.0
 keras
+flask
 
 # jax[tpu]>=0.2.16 -f https://storage.googleapis.com/jax-releases/libtpu_releases.html

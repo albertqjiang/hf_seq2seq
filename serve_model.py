@@ -91,7 +91,7 @@ if __name__ == "__main__":
     start = time.time()
     print("Compiling generation function")
     context = "Hello"
-    input_ids = tokenizer("summarize: " + context, return_tensors='np').input_ids
+    input_ids = tokenizer("summarize: " + context, return_tensors='jax', padding="max_length", truncation=True).input_ids
     fast_generate(input_ids)
     print(f"Generation compilation done, it took {time.time()-start:.06}s")
 
@@ -121,7 +121,7 @@ if __name__ == "__main__":
         sequences = []
         log_probs_for_sequences = []
         single_generation_batch = 8 if n > 8 else n
-        input_ids = tokenizer("summarize: " + context, return_tensors='np').input_ids
+        input_ids = tokenizer("summarize: " + context, return_tensors='jax', padding="max_length", truncation=True).input_ids
         for i in range(n // single_generation_batch):
             all_tokenized = []
 
