@@ -5,6 +5,7 @@ import time
 from queue import Queue, Empty
 
 import jax
+from jax import jit
 import numpy as np
 
 from transformers import FlaxT5ForConditionalGeneration, T5TokenizerFast
@@ -66,7 +67,7 @@ def parse_args():
     parser = argparse.ArgumentParser()
     parser.add_argument("--config-path", type=str, default=None, help="Config file location")
     parser.add_argument("--max-length", type=int, default=64, help="Maximum length of generation")
-    # parser.add_argument("--temp", type=float, default=1.0, help="The temperature to use for generation")
+    parser.add_argument("--single-generation-batch", type=int, default=8, help="How many candidates to generate at one time")
     args = parser.parse_args()
     return args
 
@@ -77,9 +78,22 @@ if __name__ == "__main__":
     args = parse_args()
     config_path = args.config_path
     max_length = args.max_length
-    # temp = args.temp
+    single_generation_batch = args.single_generation_batch
     model = FlaxT5ForConditionalGeneration.from_pretrained(config_path)
+
+
+    def generate_given_id(input_ids):
+        return model.generate(input_ids, max_length=max_length, num_beams=single_generation_batch)
+    fast_generate = jit(generate_given_id)
+    
     tokenizer = T5TokenizerFast.from_pretrained(config_path)
+    # Compile the funciton
+    start = time.time()
+    print("Compiling generation function")
+    context = "Hello"
+    input_ids = tokenizer("summarize: " + context, return_tensors='np').input_ids
+    fast_generate(input_ids)
+    print(f"Generation compilation done, it took {time.time()-start:.06}s")
 
     start = time.time()
     print(f"jax devices: {jax.device_count()}")
@@ -111,7 +125,7 @@ if __name__ == "__main__":
         for i in range(n // single_generation_batch):
             all_tokenized = []
 
-            outputs = model.generate(input_ids, max_length=max_length, num_beams=single_generation_batch)
+            outputs = fast_generate(input_ids)
             output_ids = outputs.sequences
             output_scores = outputs.scores.tolist()
             output_strings = [tokenizer.batch_decode(output_ids[i], skip_special_tokens=True, clean_up_tokenization_spaces=False)
