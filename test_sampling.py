@@ -17,4 +17,4 @@ if __name__ == "__main__":
     fast_gen = jit(sample)
     summary_ids = fast_gen(input_ids).sequences
     for summary_id in summary_ids:
-        print(tokenizer.decode(summary_id, skip_special_tokens=True, clean_up_tokenization_spaces=False))
+        print(tokenizer.decode([summary_id], skip_special_tokens=True, clean_up_tokenization_spaces=False))
