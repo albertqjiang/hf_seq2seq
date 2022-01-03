@@ -8,8 +8,8 @@ config_path = "aqj213/t5-small-pisa-state-only-finetuned"
 if __name__ == "__main__":
     model = FlaxT5ForConditionalGeneration.from_pretrained(config_path)
     tokenizer = T5TokenizerFast.from_pretrained(config_path)
-    input_ids = tokenizer("summarize: hello", return_tensors='jax', padding="max_length", truncation=True).input_ids
-    input_ids = jnp.repeat(input_ids, 8, axis=1)
+    input_ids = tokenizer("summarize: proof (state): no subgoals!", return_tensors='jax', padding="max_length", truncation=True).input_ids
+    input_ids = jnp.repeat(input_ids, 8, axis=0)
 
     def sample(input_ids):
         return model.generate(input_ids, do_sample=True)
