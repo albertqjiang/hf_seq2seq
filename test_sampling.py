@@ -25,6 +25,8 @@ if __name__ == "__main__":
         return model.generate(input_ids, attention_mask=attention_mask, do_sample=True)
 
     fast_gen = jit(sample)
-    summary_ids = fast_gen(input_ids, attention_mask).sequences
-    for summary_id in summary_ids:
-        print(tokenizer.decode(summary_id, skip_special_tokens=True, clean_up_tokenization_spaces=False))
+    summary = fast_gen(input_ids, attention_mask)
+    summary_ids = summary.sequences
+    candidate_scores = summary.scores
+    for summary_id, score in zip(summary_ids, candidate_scores):
+        print(tokenizer.decode(summary_id, skip_special_tokens=True, clean_up_tokenization_spaces=False), f" | Score: ${score}")
