@@ -13,7 +13,6 @@ if __name__ == "__main__":
     non_zero = np.count_nonzero(input_ids)
     attention_mask = np.zeros_like(input_ids)
     np.place(attention_mask, np.arange(attention_mask.shape[1])<non_zero, [1.])
-    attention_mask = np.expand_dims(attention_mask, axis=0)
     
     input_ids = np.repeat(input_ids, 8, axis=0)
     attention_mask = np.repeat(attention_mask, 8, axis=0)
