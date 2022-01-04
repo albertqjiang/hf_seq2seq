@@ -68,11 +68,16 @@ def parse_args():
     parser.add_argument("--config-path", type=str, default=None, help="Config file location")
     parser.add_argument("--max-length", type=int, default=64, help="Maximum length of generation")
     parser.add_argument("--single-generation-batch", type=int, default=8, help="How many candidates to generate at one time")
+    parser.add_argument("--max-source-length", type=int, default=-1, help="Maximum source length")
     args = parser.parse_args()
     return args
 
-def tokenize(tokenizer, context, n):
-    input_ids = tokenizer("summarize: " + context, return_tensors='np', padding="max_length", truncation=True).input_ids
+def tokenize(tokenizer, context, n, max_source_length):
+    if max_source_length == -1:
+        input_ids = tokenizer("summarize: " + context, return_tensors='np', padding="max_length", truncation=True).input_ids
+    else:
+        input_ids = tokenizer("summarize: " + context, return_tensors='np', padding="max_length", 
+        truncation=True, max_length=max_source_length).input_ids
     non_zero = np.count_nonzero(input_ids)
     attention_mask = np.zeros_like(input_ids)
     np.place(attention_mask, np.arange(attention_mask.shape[1])<non_zero, [1.])
@@ -83,9 +88,7 @@ def tokenize(tokenizer, context, n):
 
 if __name__ == "__main__":
     threading.Thread(target=app.run, kwargs={"port": 5000, "host": "0.0.0.0"}).start()
-
     
-
     args = parse_args()
     config_path = args.config_path
     max_length = args.max_length
@@ -97,12 +100,11 @@ if __name__ == "__main__":
         return model.generate(input_ids, attention_mask=attention_mask, do_sample=True, prng_key=prng_key)
     fast_generate = jit(sample)
     
-    tokenizer = T5TokenizerFast.from_pretrained(config_path)
     # Compile the funciton
     start = time.time()
     print("Compiling generation function")
     context = "Hello"
-    input_ids, attention_mask = tokenize(tokenizer=tokenizer, context=context, n=single_generation_batch)
+    input_ids, attention_mask = tokenize(tokenizer=tokenizer, context=context, n=single_generation_batch, max_source_length=args.max_source_length)
     prng_key = jax.random.PRNGKey(0)
     fast_generate(input_ids, attention_mask, prng_key)
     print(f"Generation compilation done, it took {time.time()-start:.06}s")
@@ -133,7 +135,7 @@ if __name__ == "__main__":
         sequences = []
         log_probs_for_sequences = []
         single_generation_batch = 8 if n > 8 else n
-        input_ids, attention_mask = tokenize(tokenizer=tokenizer, context=context, n=single_generation_batch)
+        input_ids, attention_mask = tokenize(tokenizer=tokenizer, context=context, n=single_generation_batch, max_source_length=args.max_source_length)
         for i in range(n // single_generation_batch):
             all_tokenized = []
             _, prng_key = jax.random.split(prng_key)
