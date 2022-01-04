@@ -137,9 +137,7 @@ if __name__ == "__main__":
             outputs = fast_generate(input_ids, attention_mask)
             output_ids = outputs.sequences
             output_scores = outputs.scores.squeeze().tolist()
-            output_strings = [tokenizer.batch_decode(output_ids[i], skip_special_tokens=True, clean_up_tokenization_spaces=False)
-                for i in range(single_generation_batch)
-            ]
+            output_strings = tokenizer.batch_decode(output_ids, skip_special_tokens=True, clean_up_tokenization_spaces=False)
             
             for o_string, o_score in zip(output_strings, output_scores):
                 sequences.append(o_string)
