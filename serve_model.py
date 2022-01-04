@@ -5,7 +5,7 @@ import time
 from queue import Queue, Empty
 
 import jax
-from jax import jit
+from jax import jit, pmap
 import numpy as np
 
 from transformers import FlaxT5ForConditionalGeneration, T5TokenizerFast
@@ -98,7 +98,7 @@ if __name__ == "__main__":
 
     def sample(input_ids, attention_mask, prng_key):
         return model.generate(input_ids, attention_mask=attention_mask, do_sample=True, prng_key=prng_key)
-    fast_generate = jit(sample)
+    fast_generate = pmap(sample)
     
     # Compile the funciton
     start = time.time()
