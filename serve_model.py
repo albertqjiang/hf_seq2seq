@@ -84,6 +84,9 @@ def tokenize(tokenizer, context, n):
 if __name__ == "__main__":
     threading.Thread(target=app.run, kwargs={"port": 5000, "host": "0.0.0.0"}).start()
 
+
+    prng_key = jax.random.PRNGKey(0)
+
     args = parse_args()
     config_path = args.config_path
     max_length = args.max_length
@@ -92,7 +95,7 @@ if __name__ == "__main__":
     tokenizer = T5TokenizerFast.from_pretrained(config_path)
 
     def sample(input_ids, attention_mask):
-        return model.generate(input_ids, attention_mask=attention_mask, do_sample=True)
+        return model.generate(input_ids, attention_mask=attention_mask, do_sample=True, prng_key=prng_key)
     fast_generate = jit(sample)
     
     tokenizer = T5TokenizerFast.from_pretrained(config_path)
