@@ -71,6 +71,15 @@ def parse_args():
     args = parser.parse_args()
     return args
 
+def tokenize(tokenizer, context, n):
+    input_ids = tokenizer("summarize: " + context, return_tensors='np', padding="max_length", truncation=True).input_ids
+    non_zero = np.count_nonzero(input_ids)
+    attention_mask = np.zeros_like(input_ids)
+    np.place(attention_mask, np.arange(attention_mask.shape[1])<non_zero, [1.])
+    input_ids = np.repeat(input_ids, n, axis=0)
+    attention_mask = np.repeat(attention_mask, n, axis=0)
+    return input_ids, attention_mask
+
 
 if __name__ == "__main__":
     threading.Thread(target=app.run, kwargs={"port": 5000, "host": "0.0.0.0"}).start()
@@ -80,19 +89,19 @@ if __name__ == "__main__":
     max_length = args.max_length
     single_generation_batch = args.single_generation_batch
     model = FlaxT5ForConditionalGeneration.from_pretrained(config_path)
+    tokenizer = T5TokenizerFast.from_pretrained(config_path)
 
-
-    def generate_given_id(input_ids):
-        return model.generate(input_ids, max_length=max_length, num_beams=single_generation_batch)
-    fast_generate = jit(generate_given_id)
+    def sample(input_ids, attention_mask):
+        return model.generate(input_ids, attention_mask=attention_mask, do_sample=True)
+    fast_generate = jit(sample)
     
     tokenizer = T5TokenizerFast.from_pretrained(config_path)
     # Compile the funciton
     start = time.time()
     print("Compiling generation function")
     context = "Hello"
-    input_ids = tokenizer("summarize: " + context, return_tensors='jax', padding="max_length", truncation=True).input_ids
-    fast_generate(input_ids)
+    input_ids, attention_mask = tokenize(tokenizer=tokenizer, context=context, n=single_generation_batch)
+    fast_generate(input_ids, attention_mask)
     print(f"Generation compilation done, it took {time.time()-start:.06}s")
 
     start = time.time()
@@ -121,13 +130,13 @@ if __name__ == "__main__":
         sequences = []
         log_probs_for_sequences = []
         single_generation_batch = 8 if n > 8 else n
-        input_ids = tokenizer("summarize: " + context, return_tensors='jax', padding="max_length", truncation=True).input_ids
+        input_ids, attention_mask = tokenize(tokenizer=tokenizer, context=context, n=single_generation_batch)
         for i in range(n // single_generation_batch):
             all_tokenized = []
 
-            outputs = fast_generate(input_ids)
+            outputs = fast_generate(input_ids, attention_mask)
             output_ids = outputs.sequences
-            output_scores = outputs.scores.tolist()
+            output_scores = outputs.scores.squeeze().tolist()
             output_strings = [tokenizer.batch_decode(output_ids[i], skip_special_tokens=True, clean_up_tokenization_spaces=False)
                 for i in range(single_generation_batch)
             ]

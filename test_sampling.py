@@ -29,4 +29,4 @@ if __name__ == "__main__":
     summary_ids = summary.sequences
     candidate_scores = summary.scores
     for summary_id, score in zip(summary_ids, candidate_scores):
-        print(tokenizer.decode(summary_id, skip_special_tokens=True, clean_up_tokenization_spaces=False), f" | Score: ${score}")
+        print(tokenizer.decode(summary_id, skip_special_tokens=True, clean_up_tokenization_spaces=False), f" | Score: {score[0]}")
