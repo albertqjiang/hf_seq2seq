@@ -2,6 +2,7 @@ from transformers import FlaxT5ForConditionalGeneration, T5TokenizerFast
 from jax import jit
 
 import jax.numpy as jnp
+import numpy as np
 
 config_path = "aqj213/t5-small-pisa-state-only-finetuned"
 
@@ -11,13 +12,15 @@ if __name__ == "__main__":
     input_ids = tokenizer("summarize: proof (prove) goal: No subgoals!", return_tensors='jax', padding="max_length", truncation=True).input_ids
     non_zero = jnp.count_nonzero(input_ids)
     attention_mask = jnp.zeros_like(input_ids)
-    attention_mask = jnp.place(attention_mask, attention_mask<non_zero, [1.])
+    attention_mask = np.place(attention_mask, attention_mask<non_zero, [1.])
     attention_mask = jnp.expand_dims(attention_mask, axis=0)
     
     input_ids = jnp.repeat(input_ids, 8, axis=0)
     attention_mask = jnp.repeat(attention_mask, 8, axis=0)
     print(input_ids.shape)
+    print(non_zero)
     print(attention_mask.shape)
+    print(jnp.count_zero(attention_mask))
 
     def sample(input_ids, attention_mask):
         return model.generate(input_ids, attention_mask=attention_mask, do_sample=True)
