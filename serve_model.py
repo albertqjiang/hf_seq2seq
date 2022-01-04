@@ -84,8 +84,7 @@ def tokenize(tokenizer, context, n):
 if __name__ == "__main__":
     threading.Thread(target=app.run, kwargs={"port": 5000, "host": "0.0.0.0"}).start()
 
-
-    prng_key = jax.random.PRNGKey(0)
+    
 
     args = parse_args()
     config_path = args.config_path
@@ -94,7 +93,7 @@ if __name__ == "__main__":
     model = FlaxT5ForConditionalGeneration.from_pretrained(config_path)
     tokenizer = T5TokenizerFast.from_pretrained(config_path)
 
-    def sample(input_ids, attention_mask):
+    def sample(input_ids, attention_mask, prng_key):
         return model.generate(input_ids, attention_mask=attention_mask, do_sample=True, prng_key=prng_key)
     fast_generate = jit(sample)
     
@@ -104,7 +103,8 @@ if __name__ == "__main__":
     print("Compiling generation function")
     context = "Hello"
     input_ids, attention_mask = tokenize(tokenizer=tokenizer, context=context, n=single_generation_batch)
-    fast_generate(input_ids, attention_mask)
+    prng_key = jax.random.PRNGKey(0)
+    fast_generate(input_ids, attention_mask, prng_key)
     print(f"Generation compilation done, it took {time.time()-start:.06}s")
 
     start = time.time()
@@ -136,8 +136,8 @@ if __name__ == "__main__":
         input_ids, attention_mask = tokenize(tokenizer=tokenizer, context=context, n=single_generation_batch)
         for i in range(n // single_generation_batch):
             all_tokenized = []
-
-            outputs = fast_generate(input_ids, attention_mask)
+            _, prng_key = jax.random.split(prng_key)
+            outputs = fast_generate(input_ids, attention_mask, prng_key)
             output_ids = outputs.sequences
             output_scores = outputs.scores.squeeze().tolist()
             output_strings = tokenizer.batch_decode(output_ids, skip_special_tokens=True, clean_up_tokenization_spaces=False)
