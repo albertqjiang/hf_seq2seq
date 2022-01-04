@@ -16,10 +16,10 @@ if __name__ == "__main__":
     
     input_ids = np.repeat(input_ids, 8, axis=0)
     attention_mask = np.repeat(attention_mask, 8, axis=0)
-    print(input_ids.shape)
-    print(non_zero)
-    print(attention_mask.shape)
-    print(np.count_nonzero(attention_mask))
+    # print(input_ids.shape)
+    # print(non_zero)
+    # print(attention_mask.shape)
+    # print(np.count_nonzero(attention_mask))
 
     def sample(input_ids, attention_mask):
         return model.generate(input_ids, attention_mask=attention_mask, do_sample=True)
