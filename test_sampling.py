@@ -12,7 +12,7 @@ if __name__ == "__main__":
     input_ids = tokenizer("summarize: proof (prove) goal: No subgoals!", return_tensors='np', padding="max_length", truncation=True).input_ids
     non_zero = np.count_nonzero(input_ids)
     attention_mask = np.zeros_like(input_ids)
-    attention_mask = np.place(attention_mask, attention_mask<non_zero, [1.])
+    np.place(attention_mask, np.arange(len(attention_mask))<non_zero, [1.])
     attention_mask = np.expand_dims(attention_mask, axis=0)
     
     input_ids = np.repeat(input_ids, 8, axis=0)
