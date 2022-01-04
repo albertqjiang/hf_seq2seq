@@ -106,7 +106,7 @@ if __name__ == "__main__":
     context = "Hello"
     input_ids, attention_mask = tokenize(tokenizer=tokenizer, context=context, n=single_generation_batch, max_source_length=args.max_source_length)
     prng_key = jax.random.PRNGKey(0)
-    prng_key = jax.random.split(prng_key[0], input_ids.shape[0])
+    prng_key = jax.random.split(prng_key, input_ids.shape[0])
     fast_generate(input_ids, attention_mask, prng_key)
     print(f"Generation compilation done, it took {time.time()-start:.06}s")
 
