@@ -20,7 +20,7 @@ if __name__ == "__main__":
     print(input_ids.shape)
     print(non_zero)
     print(attention_mask.shape)
-    print(np.count_zero(attention_mask))
+    print(np.count_nonzero(attention_mask))
 
     def sample(input_ids, attention_mask):
         return model.generate(input_ids, attention_mask=attention_mask, do_sample=True)
