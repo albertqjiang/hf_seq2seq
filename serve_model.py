@@ -146,7 +146,7 @@ if __name__ == "__main__":
                 log_probs_for_sequences.append(o_score)
 
         for o, q, slp in zip(sequences, all_q, log_probs_for_sequences):
-            q.put((o, slp))
+            q.put(("".join(o).strip(), slp))
             # q.put((tokenizer.decode(o), slp.tolist()))
 
         print(f"completion done in {time.time() - start:06}s")
