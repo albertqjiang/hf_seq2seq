@@ -3,9 +3,11 @@ import json
 import threading
 import time
 from queue import Queue, Empty
+import flax
 
 import jax
-from jax import jit, pmap
+from jax import pmap
+import jax.numpy as jnp
 import numpy as np
 
 from transformers import FlaxT5ForConditionalGeneration, T5TokenizerFast
@@ -86,6 +88,13 @@ def tokenize(tokenizer, context, n, max_source_length):
     return input_ids, attention_mask
 
 
+@flax.struct.dataclass
+class GenerationState:
+    input_ids: jnp.ndarray
+    attention_mask: jnp.ndarray
+    rng: jnp.ndarray
+
+
 if __name__ == "__main__":
     threading.Thread(target=app.run, kwargs={"port": 5000, "host": "0.0.0.0"}).start()
     
@@ -96,18 +105,27 @@ if __name__ == "__main__":
     model = FlaxT5ForConditionalGeneration.from_pretrained(config_path)
     tokenizer = T5TokenizerFast.from_pretrained(config_path)
     
-    def sample(input_ids, attention_mask, prng_key):
-        return model.generate(input_ids, attention_mask=attention_mask, do_sample=True, prng_key=prng_key)
+    def sample(state):
+        input_ids = state.input_ids
+        attention_mask = state.attention_mask
+        rng = state.rng
+        _, rng = jax.random.split(rng)
+        return model.generate(input_ids, attention_mask=attention_mask, do_sample=True, prng_key=rng)
     fast_generate = pmap(sample)
     
     # Compile the funciton
     start = time.time()
     print("Compiling generation function")
     context = "Hello"
-    input_ids, attention_mask = tokenize(tokenizer=tokenizer, context=context, n=single_generation_batch, max_source_length=args.max_source_length)
+    input_ids, attention_mask = tokenize(tokenizer=tokenizer, context=context, 
+                                         n=single_generation_batch, max_source_length=args.max_source_length)
     prng_key = jax.random.PRNGKey(0)
-    prng_key = jax.random.split(prng_key, input_ids.shape[0])
-    fast_generate(input_ids, attention_mask, prng_key)
+    state = GenerationState(
+        input_ids=input_ids,
+        attention_mask = attention_mask,
+        rng=prng_key
+    )
+    fast_generate(state)
     print(f"Generation compilation done, it took {time.time()-start:.06}s")
 
     start = time.time()
@@ -139,8 +157,12 @@ if __name__ == "__main__":
         input_ids, attention_mask = tokenize(tokenizer=tokenizer, context=context, n=single_generation_batch, max_source_length=args.max_source_length)
         for i in range(n // single_generation_batch):
             all_tokenized = []
-            prng_key = jax.random.split(prng_key[0], input_ids.shape[0])
-            outputs = fast_generate(input_ids, attention_mask, prng_key)
+            state = GenerationState(
+                input_ids=input_ids,
+                attention_mask = attention_mask,
+                rng=prng_key
+            )
+            outputs = fast_generate(state)
             output_ids = outputs.sequences
             output_scores = outputs.scores.squeeze().tolist()
             output_strings = tokenizer.batch_decode(output_ids, skip_special_tokens=True, clean_up_tokenization_spaces=False)
