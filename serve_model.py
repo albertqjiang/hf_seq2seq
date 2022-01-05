@@ -109,7 +109,6 @@ if __name__ == "__main__":
         input_ids = state.input_ids
         attention_mask = state.attention_mask
         rng = state.rng
-        _, rng = jax.random.split(rng)
         return model.generate(input_ids, attention_mask=attention_mask, do_sample=True, prng_key=rng)
     fast_generate = pmap(sample)
     
@@ -120,6 +119,7 @@ if __name__ == "__main__":
     input_ids, attention_mask = tokenize(tokenizer=tokenizer, context=context, 
                                          n=single_generation_batch, max_source_length=args.max_source_length)
     prng_key = jax.random.PRNGKey(0)
+    prng_key = jax.random.split(prng_key, input_ids.shape[0])
     state = GenerationState(
         input_ids=input_ids,
         attention_mask = attention_mask,
@@ -157,6 +157,7 @@ if __name__ == "__main__":
         input_ids, attention_mask = tokenize(tokenizer=tokenizer, context=context, n=single_generation_batch, max_source_length=args.max_source_length)
         for i in range(n // single_generation_batch):
             all_tokenized = []
+            prng_key = jax.random.split(prng_key, input_ids.shape[0])
             state = GenerationState(
                 input_ids=input_ids,
                 attention_mask = attention_mask,
