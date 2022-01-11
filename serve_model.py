@@ -71,6 +71,9 @@ def parse_args():
     parser.add_argument("--max-length", type=int, default=64, help="Maximum length of generation")
     parser.add_argument("--single-generation-batch", type=int, default=8, help="How many candidates to generate at one time")
     parser.add_argument("--max-source-length", type=int, default=-1, help="Maximum source length")
+    parser.add_argument('--sample', dest='sample', action='store_true')
+    parser.add_argument('--no-sample', dest='sample', action='store_false')
+    parser.set_defaults(sample=True)
     args = parser.parse_args()
     return args
 
@@ -105,12 +108,12 @@ if __name__ == "__main__":
     model = FlaxT5ForConditionalGeneration.from_pretrained(config_path)
     tokenizer = T5TokenizerFast.from_pretrained(config_path)
     
-    def sample(state):
+    def generate(state):
         input_ids = state.input_ids
         attention_mask = state.attention_mask
         rng = state.rng
-        return model.generate(input_ids, attention_mask=attention_mask, do_sample=True, prng_key=rng)
-    fast_generate = jit(sample)
+        return model.generate(input_ids, attention_mask=attention_mask, do_sample=args.sample, prng_key=rng)
+    fast_generate = jit(generate)
     
     # Compile the funciton
     start = time.time()
