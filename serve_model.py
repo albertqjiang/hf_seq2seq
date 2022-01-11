@@ -6,7 +6,7 @@ from queue import Queue, Empty
 import flax
 
 import jax
-from jax import pmap
+from jax import jit
 import jax.numpy as jnp
 import numpy as np
 
