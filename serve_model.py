@@ -168,7 +168,10 @@ if __name__ == "__main__":
             )
             outputs = fast_generate(state)
             output_ids = outputs.sequences
-            output_scores = outputs.scores.squeeze().tolist()
+            if args.sample:
+                output_scores = outputs.scores.squeeze().tolist()
+            else:
+                output_scores = [0.0] * n
             output_strings = tokenizer.batch_decode(output_ids, skip_special_tokens=True, clean_up_tokenization_spaces=False)
             
             for o_string, o_score in zip(output_strings, output_scores):
